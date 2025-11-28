@@ -19,6 +19,8 @@ Package.onTest(function(api) {
   api.use('ecmascript');
   api.use('typescript');
   api.use('meteortesting:mocha');
+  api.use('mongo');
+  api.use('random');
   api.use('anonyfox:publication-collector');
 
   api.mainModule('tests/index.test.ts', 'server');
