@@ -1,10 +1,12 @@
 # Publication Collector
 
-Deterministic test helper for Meteor 3+ publications. Collects publication data without DDP overhead using Meteor's internal AsynchronousQueue for precise timing.
+Fast, deterministic testing for Meteor 3+ publications. Leverages Meteor's async `AsynchronousQueue.flush()` to collect publication data synchronously without DDP overhead or artificial delays.
 
-## Requirements
+**Designed for Meteor 3.3+** — Uses internal APIs (`_publishCursor`, `initialAddsSent`, `_multiplexer._queue.flush()`) specifically built for Meteor's async collections and pub/sub system.
 
-- Meteor 3.3 or higher (uses internal APIs)
+## Why This Exists
+
+Testing publications in Meteor traditionally required DDP connections or unreliable `setTimeout()` polling. This package directly invokes publication handlers and waits for Meteor's internal async queues to drain, providing **deterministic, race-condition-free tests** that run in ~3ms vs 50-100ms.
 
 ## Installation
 
@@ -12,29 +14,49 @@ Deterministic test helper for Meteor 3+ publications. Collects publication data 
 meteor add anonyfox:publication-collector
 ```
 
-## Features
-
-- **Zero artificial delays** - Uses queue flush for precise timing
-- **Fast** - ~3ms per test vs 50-100ms with setTimeout approaches
-- **Reliable** - No race conditions or flaky tests
-- **TypeScript** - Full type definitions included
-
 ## Usage
 
 ```typescript
 import { PublicationCollector } from 'meteor/anonyfox:publication-collector';
 
-// Basic usage
+// Basic: collect all documents from a publication
 const collector = new PublicationCollector();
-const data = await collector.collect('myPublication');
+const result = await collector.collect('posts.recent');
+// result = { posts: [{ _id: '1', title: '...' }, ...] }
 
-// With user context
-const collector = new PublicationCollector({ userId: 'user-123' });
-const result = await collector.collect('myPublication', param1, param2);
+// With user context and arguments
+const collector = new PublicationCollector({ userId: 'user123' });
+const { users } = await collector.collect('users.byRole', 'admin');
 
-// Returns object with collections as keys
-const { users, posts } = result;
+// Multiple collections (array of cursors)
+const { posts, comments } = await collector.collect('posts.withComments', postId);
+
+// Manual this.added/changed/removed
+const { customData } = await collector.collect('aggregatedPublication');
 ```
+
+## What It Supports
+
+- **Single/multiple cursors** — Returns `Cursor` or `[Cursor, ...]`
+- **Manual DDP methods** — `this.added()`, `this.changed()`, `this.removed()`
+- **Async publications** — Awaits promises, handles async/await
+- **User context** — `this.userId` simulation
+- **Field projection** — Respects `fields` option in cursors
+- **Error handling** — Propagates sync/async errors from publications
+
+## How It Works
+
+1. Directly calls `Meteor.server.publish_handlers[name]` with collector as `this` context
+2. If cursors returned, calls `cursor._publishCursor(this)` to start observation
+3. Waits for `observeHandle.initialAddsSent` (MongoDB fetch completes)
+4. Calls `observeHandle._multiplexer._queue.flush()` to drain all queued callbacks
+5. Returns collected documents grouped by collection name
+
+No polling, no delays, no DDP — just direct async queue synchronization.
+
+## TypeScript
+
+Full type definitions included. Works out of the box with TypeScript projects.
 
 ## License
 
