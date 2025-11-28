@@ -2,12 +2,12 @@ Package.describe({
   name: 'anonyfox:publication-collector',
   version: '0.0.1',
   summary: 'Collect publications for testing (Meteor 3.3+)',
-  git: 'https://github.com/Anonyfox/publication-collector',
+  git: 'https://github.com/Anonyfox/meteor-publication-collector',
   documentation: 'README.md'
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom(['3.3', '3.4']);
+  api.versionsFrom(['3.3']);
 
   api.use('ecmascript');
   api.use('typescript');
