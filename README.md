@@ -17,22 +17,25 @@ meteor add anonyfox:publication-collector
 ## Usage
 
 ```typescript
-import { PublicationCollector } from 'meteor/anonyfox:publication-collector';
+import { PublicationCollector } from "meteor/anonyfox:publication-collector";
 
 // Basic: collect all documents from a publication
 const collector = new PublicationCollector();
-const result = await collector.collect('posts.recent');
+const result = await collector.collect("posts.recent");
 // result = { posts: [{ _id: '1', title: '...' }, ...] }
 
 // With user context and arguments
-const collector = new PublicationCollector({ userId: 'user123' });
-const { users } = await collector.collect('users.byRole', 'admin');
+const collector = new PublicationCollector({ userId: "user123" });
+const { users } = await collector.collect("users.byRole", "admin");
 
 // Multiple collections (array of cursors)
-const { posts, comments } = await collector.collect('posts.withComments', postId);
+const { posts, comments } = await collector.collect(
+  "posts.withComments",
+  postId
+);
 
 // Manual this.added/changed/removed
-const { customData } = await collector.collect('aggregatedPublication');
+const { customData } = await collector.collect("aggregatedPublication");
 ```
 
 ## What It Supports
@@ -58,7 +61,18 @@ No polling, no delays, no DDP — just direct async queue synchronization.
 
 Full type definitions included. Works out of the box with TypeScript projects.
 
-## License
+---
 
-MIT
+<div align="center">
 
+### Support
+
+If this package helps your project, consider sponsoring its maintenance:
+
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/Anonyfox)
+
+---
+
+**[Anonyfox](https://anonyfox.com) • [MIT License](LICENSE)**
+
+</div>
